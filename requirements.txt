@@ -4,4 +4,5 @@ gTTS
 pygame
 opencv-python
 numpy
+flask 
 pyaudio
