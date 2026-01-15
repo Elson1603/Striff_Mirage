@@ -11,6 +11,7 @@ export const SpeechProvider = ({ children }) => {
   const [message, setMessage] = useState();
   const [loading, setLoading] = useState(false);
   const [userMessage, setUserMessage] = useState(null);
+  const [personality, setPersonality] = useState("worldTraveler");
 
   let chunks = [];
 
@@ -35,7 +36,7 @@ export const SpeechProvider = ({ children }) => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ audio: base64Audio }),
+          body: JSON.stringify({ audio: base64Audio, personality }),
         });
         const response = await data.json();
         setUserMessage(response.userMessage || null);
@@ -95,7 +96,7 @@ export const SpeechProvider = ({ children }) => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({ message, personality }),
       });
       const response = (await data.json()).messages;
       setMessages((messages) => [...messages, ...response]);
@@ -132,6 +133,8 @@ export const SpeechProvider = ({ children }) => {
         message,
         onMessagePlayed,
         loading,
+        personality,
+        setPersonality,
       }}
     >
       {children}

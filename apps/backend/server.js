@@ -1,7 +1,7 @@
 import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
-import { geminiChain, parser } from "./modules/openAI.mjs";
+import { createGeminiChain, parser, personalities } from "./modules/openAI.mjs";
 import { lipSync } from "./modules/lip-sync.mjs";
 import { sendDefaultMessages, defaultResponse } from "./modules/defaultMessages.mjs";
 import { convertAudioToText } from "./modules/whisper.mjs";
@@ -19,21 +19,34 @@ app.get("/voices", async (req, res) => {
   res.send(await voice.getVoices(elevenLabsApiKey));
 });
 
+app.get("/personalities", async (req, res) => {
+  const personalitiesList = Object.entries(personalities).map(([key, value]) => ({
+    key,
+    name: value.name,
+    description: value.description,
+    icon: value.icon
+  }));
+  res.send({ personalities: personalitiesList });
+});
+
 app.post("/tts", async (req, res) => {
   try {
     const userMessage = await req.body.message;
-    console.log(`[Server] /tts endpoint called with message: ${userMessage?.substring(0, 50)}...`);
+    const personality = req.body.personality || "worldTraveler";
+    console.log(`[Server] /tts endpoint called with personality: ${personality}`);
     
     const defaultMessages = await sendDefaultMessages({ userMessage });
     if (defaultMessages) {
       console.log(`[Server] Returning default messages`);
       res.send({ messages: defaultMessages });
+
       return;
     }
     
     let geminimessages;
     try {
-      console.log(`[Server] Invoking Gemini chain`);
+      console.log(`[Server] Invoking Gemini chain with personality: ${personality}`);
+      const geminiChain = createGeminiChain(personality);
       geminimessages = await geminiChain.invoke({
         question: userMessage,
         format_instructions: parser.getFormatInstructions(),
@@ -64,6 +77,7 @@ app.post("/tts", async (req, res) => {
 app.post("/sts", async (req, res) => {
   try {
     const base64Audio = req.body.audio;
+    const personality = req.body.personality || "worldTraveler";
     console.log(`[Server] /sts endpoint called with audio of length: ${base64Audio?.length}`);
     
     const audioData = Buffer.from(base64Audio, "base64");
@@ -74,7 +88,8 @@ app.post("/sts", async (req, res) => {
     
     let geminimessages;
     try {
-      console.log(`[Server] Invoking Gemini chain`);
+      console.log(`[Server] Invoking Gemini chain with personality: ${personality}`);
+      const geminiChain = createGeminiChain(personality);
       geminimessages = await geminiChain.invoke({
         question: userMessage,
         format_instructions: parser.getFormatInstructions(),

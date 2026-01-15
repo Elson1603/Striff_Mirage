@@ -3,29 +3,9 @@ import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { StructuredOutputParser } from "langchain/output_parsers";
 import { z } from "zod";
 import dotenv from "dotenv";
+import { personalities } from "./personalities.mjs";
 
 dotenv.config();
-
-const template = `
-  You are Jack, a friendly and concise AI assistant.
-  IMPORTANT: Keep your response SHORT and BRIEF - maximum 1-2 sentences.
-  Respond with exactly 1 message in JSON format:
-  \n{format_instructions}.
-  Respond naturally and conversationally, but stay concise.
-  Facial expressions: smile, sad, angry, surprised, funnyFace, default.
-  Animations: Idle, TalkingOne, TalkingThree, SadIdle, Defeated, Angry, Surprised, DismissingGesture, ThoughtfulHeadShake.
-`;
-
-const prompt = ChatPromptTemplate.fromMessages([
-  ["ai", template],
-  ["human", "{question}"],
-]);
-
-const model = new ChatGoogleGenerativeAI({
-  apiKey: process.env.GEMINI_API_KEY || "-",
-  modelName: process.env.GEMINI_MODEL || "gemini-2.5-flash-lite",
-  temperature: 0.2,
-});
 
 const parser = StructuredOutputParser.fromZodSchema(
   z.object({
@@ -48,6 +28,25 @@ const parser = StructuredOutputParser.fromZodSchema(
   })
 );
 
-const geminiChain = prompt.pipe(model).pipe(parser);
+const model = new ChatGoogleGenerativeAI({
+  apiKey: process.env.GEMINI_API_KEY || "-",
+  modelName: process.env.GEMINI_MODEL || "gemini-2.5-flash-lite",
+  temperature: 0.2,
+});
 
-export { geminiChain, parser };
+// Create dynamic chain based on personality
+const createGeminiChain = (personalityKey = "worldTraveler") => {
+  const personality = personalities[personalityKey] || personalities.worldTraveler;
+  
+  const template = `${personality.prompt}`;
+
+  const prompt = ChatPromptTemplate.fromMessages([
+    ["ai", template],
+    ["human", "{question}"],
+  ]);
+
+  return prompt.pipe(model).pipe(parser);
+};
+
+export { createGeminiChain, parser, personalities };
+

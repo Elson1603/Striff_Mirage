@@ -1,9 +1,10 @@
 import { useRef } from "react";
 import { useSpeech } from "../hooks/useSpeech";
+import { PersonalitySelector } from "./PersonalitySelector";
 
 export const ChatInterface = ({ hidden, onNavigate, ...props }) => {
   const input = useRef();
-  const { tts, loading, message, startRecording, stopRecording, recording, userMessage } = useSpeech();
+  const { tts, loading, message, startRecording, stopRecording, recording, userMessage, personality, setPersonality } = useSpeech();
 
   const sendMessage = () => {
     const text = input.current.value;
@@ -25,14 +26,20 @@ export const ChatInterface = ({ hidden, onNavigate, ...props }) => {
             {loading ? "Loading..." : "Type a message and press enter to chat with the AI."}
           </p>
         </div>
-        {onNavigate && (
-          <button
-            onClick={() => onNavigate("dashboard")}
-            className="self-start backdrop-blur-md bg-white bg-opacity-50 hover:bg-opacity-70 text-gray-700 px-4 py-2 rounded-lg font-semibold transition-all pointer-events-auto"
-          >
-            Dashboard
-          </button>
-        )}
+        <div className="flex gap-2 self-start">
+          <PersonalitySelector 
+            selectedPersonality={personality}
+            onPersonalityChange={setPersonality}
+          />
+          {onNavigate && (
+            <button
+              onClick={() => onNavigate("dashboard")}
+              className="self-start backdrop-blur-md bg-white bg-opacity-50 hover:bg-opacity-70 text-gray-700 px-4 py-2 rounded-lg font-semibold transition-all pointer-events-auto"
+            >
+              Dashboard
+            </button>
+          )}
+        </div>
       </div>
       
       {/* User Message Display */}
