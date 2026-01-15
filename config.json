@@ -1,9 +1,0 @@
-{
-  "gemini_api_key": "AIzaSyCTdWuSq6fgxdWLKbz_Z5AZR-uiDH_Trbk",
-  "model": "gemini-1.5-pro",
-  "voice_name": "Kore",
-  "avatar_image": "assets/avatar_base.png",
-  "enable_emotion_detection": true,
-  "enable_memory": true,
-  "memory_file": "conversation_memory.json"
-}
