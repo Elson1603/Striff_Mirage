@@ -310,9 +310,9 @@ Convert text to speech with avatar animation data.
 }
 ```
 
-### POST `/speech-to-text`
+### POST `/sts`
 
-Convert audio to text using Whisper.
+Speech-to-Speech endpoint. Converts audio to text using Whisper, processes it with AI, and returns a complete response with audio and animation data.
 
 **Request Body:**
 ```json
@@ -324,7 +324,15 @@ Convert audio to text using Whisper.
 **Response:**
 ```json
 {
-  "text": "What is the weather like today?"
+  "messages": [
+    {
+      "text": "The weather is sunny today!",
+      "audio": "base64_encoded_audio_data",
+      "lipsync": { /* lip-sync animation data */ },
+      "facialExpression": "smile",
+      "animation": "Talking"
+    }
+  ]
 }
 ```
 
