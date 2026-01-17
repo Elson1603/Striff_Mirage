@@ -15,19 +15,37 @@ export function Avatar(props) {
   const { message, onMessagePlayed } = useSpeech();
   const [lipsync, setLipsync] = useState();
   const [setupMode, setSetupMode] = useState(false);
+  const audioRef = useRef(null);
 
   useEffect(() => {
     if (!message) {
       setAnimation("Idle");
+      // Stop and cleanup any playing audio
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+        audioRef.current = null;
+      }
       return;
     }
+    
+    // Stop previous audio if playing
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+    
     setAnimation(message.animation);
     setFacialExpression(message.facialExpression);
     setLipsync(message.lipsync);
     const audio = new Audio("data:audio/mp3;base64," + message.audio);
+    audioRef.current = audio;
     audio.play();
     setAudio(audio);
-    audio.onended = onMessagePlayed;
+    audio.onended = () => {
+      audioRef.current = null;
+      onMessagePlayed();
+    };
   }, [message]);
 
 

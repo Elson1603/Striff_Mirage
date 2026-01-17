@@ -3,7 +3,7 @@ import { getPhonemes } from "./rhubarbLipSync.mjs";
 import { readJsonTranscript, audioFileToBase64 } from "../utils/files.mjs";
 
 const MAX_RETRIES = 10;
-const RETRY_DELAY = 0;
+const RETRY_DELAY = 2000; // 2 seconds delay between retries
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -19,14 +19,14 @@ const lipSync = async ({ messages }) => {
         try {
           console.log(`[LipSync] Phase 1: Converting message ${index} to speech (attempt ${attempt + 1}/${MAX_RETRIES})`);
           await convertTextToSpeech({ text: message.text, fileName });
-          await delay(RETRY_DELAY);
           console.log(`[LipSync] Phase 1: Message ${index} converted to speech successfully`);
           break;
         } catch (error) {
           console.error(`[LipSync] Phase 1: Attempt ${attempt + 1} failed for message ${index}:`, error.message);
           if (error.response && error.response.status === 429 && attempt < MAX_RETRIES - 1) {
-            console.log(`[LipSync] Rate limited, retrying...`);
-            await delay(RETRY_DELAY);
+            const delayTime = RETRY_DELAY * (attempt + 1); // Exponential backoff
+            console.log(`[LipSync] Rate limited (429), waiting ${delayTime}ms before retry...`);
+            await delay(delayTime);
           } else if (attempt === MAX_RETRIES - 1) {
             console.error(`[LipSync] Phase 1: Max retries exceeded for message ${index}`);
             throw error;

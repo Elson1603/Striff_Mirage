@@ -78,6 +78,7 @@ app.post("/sts", async (req, res) => {
   try {
     const base64Audio = req.body.audio;
     const personality = req.body.personality || "worldTraveler";
+    console.log(`[Server] /sts endpoint called with personality: ${personality}`);
     console.log(`[Server] /sts endpoint called with audio of length: ${base64Audio?.length}`);
     
     const audioData = Buffer.from(base64Audio, "base64");

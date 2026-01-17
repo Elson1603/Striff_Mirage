@@ -34,6 +34,13 @@ async function convertTextToSpeech({ text, fileName }) {
     const fullPath = join(backendDir, fileName);
     console.log(`[ElevenLabs] Full file path: ${fullPath}`);
     
+    if (!elevenLabsApiKey) {
+      throw new Error("ELEVEN_LABS_API_KEY not set in environment variables");
+    }
+    if (!voiceID) {
+      throw new Error("ELEVEN_LABS_VOICE_ID not set in environment variables");
+    }
+    
     await voice.textToSpeech({
       fileName: fullPath,
       textInput: text,
@@ -47,6 +54,10 @@ async function convertTextToSpeech({ text, fileName }) {
     console.log(`[ElevenLabs] TTS conversion completed successfully for: ${fileName}`);
   } catch (error) {
     console.error(`[ElevenLabs] Error during TTS conversion:`, error.message);
+    if (error.response?.status === 401) {
+      console.error(`[ElevenLabs] AUTHENTICATION ERROR: Invalid or expired API key`);
+      console.error(`[ElevenLabs] Please check your ELEVEN_LABS_API_KEY environment variable`);
+    }
     console.error(`[ElevenLabs] Full error:`, error);
     throw error;
   }
